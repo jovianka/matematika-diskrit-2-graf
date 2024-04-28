@@ -111,5 +111,9 @@ int main()
   }
   printf("\n");
 
+  printf("Prim's Algorithm :\n");
   prim_mst(graph);
+
+  printf("\nKruskal's Algorithm :\n");
+  kruskal_mst(graph);
 }

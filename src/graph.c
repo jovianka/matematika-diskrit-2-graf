@@ -108,7 +108,7 @@ int add_weighted_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int d
 {
   graph->adj_matrix[src][dest] = weight;
   graph->adj_matrix[dest][src] = weight;
-  if(graph->adj_matrix[src][dest] != 0)
+  if (graph->adj_matrix[src][dest] != 0)
   {
     graph->edge_count += 1;
   }
@@ -311,7 +311,7 @@ void print_edges_from_prufer(int *prufer, int m)
 
 // MST (Minimal Spanning Tree)
 // Prim's Algorithm
-int is_valid_edge(int u, int v, int *in_mst)
+int is_valid_edge_prim(int u, int v, int *in_mst)
 {
   if (u == v)
     return 1;
@@ -326,7 +326,7 @@ int prim_mst(AdjMatrixGraph *graph)
 {
   int *in_mst = calloc(graph->vertex_count, sizeof graph->adj_matrix[0][0]);
 
-  in_mst[2] = 1;
+  in_mst[0] = 1;
   int edge_count = 0, min_weight = 0;
   while (edge_count < graph->vertex_count - 1)
   {
@@ -337,7 +337,7 @@ int prim_mst(AdjMatrixGraph *graph)
       {
         if (graph->adj_matrix[i][j] < min && graph->adj_matrix[i][j] != 0)
         {
-          if (is_valid_edge(i, j, in_mst))
+          if (is_valid_edge_prim(i, j, in_mst))
           {
             min = graph->adj_matrix[i][j];
             a = i;
@@ -359,3 +359,53 @@ int prim_mst(AdjMatrixGraph *graph)
 }
 
 // Kruskal's Algorithm
+int parent[5];
+int find(int i)
+{
+  while (parent[i] != 1)
+  {
+    i = parent[i];
+  }
+  return i;
+}
+
+int is_valid_edge_krus(int i, int j)
+{
+  int a = find(i);
+  int b = find(j);
+  parent[a] = b;
+}
+
+int kruskal_mst(AdjMatrixGraph *graph)
+{
+  int min_weight = 0;
+
+  for (int i = 0; i < graph->vertex_count; i++)
+  {
+    parent[i] = i;
+  }
+
+  int edge_count = 0;
+  while (edge_count < graph->vertex_count - 1)
+  {
+    int min = 999, a = -1, b = -1;
+    for (int i = 0; i < graph->vertex_count; i++)
+    {
+      for (int j = 0; j < graph->vertex_count; j++)
+      {
+        if (find(i) != find(j) && graph->adj_matrix[i][j] < min)
+        {
+          min = graph->adj_matrix[i][j];
+          a = i;
+          b = j;
+        }
+      }
+    }
+
+    is_valid_edge_krus(a, b);
+    printf("Edge %d:(%d, %d) Weight:%d \n", edge_count++, a, b, min);
+    min_weight += min;
+  }
+
+  printf("\n Minimum weight = %d \n", min_weight);
+}
