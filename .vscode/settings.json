@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "*.embeddedhtml": "html",
+    "cstdlib": "c",
+    "graph_types.h": "c"
+  },
+  "cmake.sourceDirectory": "/home/jeanjacket/storage/kuliah/git-submodules/matematika-diskrit-2/project-1/src"
+}
