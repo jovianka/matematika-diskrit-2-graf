@@ -104,6 +104,18 @@ int add_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest)
   return 1;
 }
 
+int add_weighted_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest, int weight)
+{
+  graph->adj_matrix[src][dest] = weight;
+  graph->adj_matrix[dest][src] = weight;
+  if(graph->adj_matrix[src][dest] != 0)
+  {
+    graph->edge_count += 1;
+  }
+
+  return 1;
+}
+
 int remove_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest)
 {
   graph->adj_matrix[src][dest] = 0;
@@ -247,7 +259,8 @@ PruferCode *to_prufer(AdjMatrixGraph *graph)
   return prufer_code;
 }
 
-void free_prufer(PruferCode* prufer_code){
+void free_prufer(PruferCode *prufer_code)
+{
   free(prufer_code->sequence);
 }
 
@@ -295,3 +308,54 @@ void print_edges_from_prufer(int *prufer, int m)
 
   free(vertex_set);
 }
+
+// MST (Minimal Spanning Tree)
+// Prim's Algorithm
+int is_valid_edge(int u, int v, int *in_mst)
+{
+  if (u == v)
+    return 1;
+  if (in_mst[u] == 0 && in_mst[v] == 0)
+    return 0;
+  else if (in_mst[u] == 1 && in_mst[v] == 1)
+    return 0;
+  return 1;
+}
+
+int prim_mst(AdjMatrixGraph *graph)
+{
+  int *in_mst = calloc(graph->vertex_count, sizeof graph->adj_matrix[0][0]);
+
+  in_mst[2] = 1;
+  int edge_count = 0, min_weight = 0;
+  while (edge_count < graph->vertex_count - 1)
+  {
+    int min = 999, a = -1, b = -1;
+    for (int i = 0; i < graph->vertex_count; i++)
+    {
+      for (int j = 0; j < graph->vertex_count; j++)
+      {
+        if (graph->adj_matrix[i][j] < min && graph->adj_matrix[i][j] != 0)
+        {
+          if (is_valid_edge(i, j, in_mst))
+          {
+            min = graph->adj_matrix[i][j];
+            a = i;
+            b = j;
+          }
+        }
+      }
+    }
+
+    if (a != -1 && b != -1)
+    {
+      printf("Edge %d:(%d, %d) Weight: %d \n", edge_count++, a, b, min);
+      min_weight = min_weight + min;
+      in_mst[b] = in_mst[a] = 1;
+    }
+  }
+
+  printf("\n Minimum weight = %d \n", min_weight);
+}
+
+// Kruskal's Algorithm

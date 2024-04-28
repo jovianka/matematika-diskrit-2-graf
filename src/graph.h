@@ -39,6 +39,7 @@ AdjMatrixGraph *create_adjmatrix_graph(int vertex_count);
 void free_adjmatrix_graph(AdjMatrixGraph *graph);
 int add_adjmatrix_directed_edge(AdjMatrixGraph *graph, int src, int dest);
 int add_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest);
+int add_weighted_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest, int weight);
 int remove_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest);
 // VertexDegree *find_adjmatrix_vertex_degree(AdjMatrixGraph *graph, int vertex); // Make sure to free the pointer after use.
 int find_adjmatrix_vertex_degree(AdjMatrixGraph *graph, int vertex);
@@ -48,3 +49,5 @@ int is_adjmatrix_graph_tree(AdjMatrixGraph *graph);
 PruferCode *to_prufer(AdjMatrixGraph *graph);
 void print_edges_from_prufer(int* prufer, int m);
 void free_prufer(PruferCode* prufer_code);
+int is_valid_edge(int u, int v, int *in_mst);
+int prim_mst(AdjMatrixGraph *graph);
