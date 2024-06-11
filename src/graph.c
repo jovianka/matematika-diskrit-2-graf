@@ -91,6 +91,7 @@ void free_adjmatrix_graph(AdjMatrixGraph *graph)
 int add_adjmatrix_directed_edge(AdjMatrixGraph *graph, int src, int dest)
 {
   graph->adj_matrix[src][dest] = 1;
+  graph->edge_count += 1;
 
   return 1;
 }
@@ -108,6 +109,17 @@ int add_weighted_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int d
 {
   graph->adj_matrix[src][dest] = weight;
   graph->adj_matrix[dest][src] = weight;
+  if (graph->adj_matrix[src][dest] != 0)
+  {
+    graph->edge_count += 1;
+  }
+
+  return 1;
+}
+
+int add_weighted_adjmatrix_directed_edge(AdjMatrixGraph *graph, int src, int dest, int weight)
+{
+  graph->adj_matrix[src][dest] = weight;
   if (graph->adj_matrix[src][dest] != 0)
   {
     graph->edge_count += 1;
@@ -355,57 +367,201 @@ int prim_mst(AdjMatrixGraph *graph)
     }
   }
 
-  printf("\n Minimum weight = %d \n", min_weight);
+  printf("Minimum weight = %d \n", min_weight);
 }
 
-// Kruskal's Algorithm
-int parent[5];
-int find(int i)
-{
-  while (parent[i] != 1)
-  {
-    i = parent[i];
-  }
-  return i;
-}
+// Kruskal's Algorithm (doesn't work)
+// int parent[5];
+// int find(int i)
+// {
+//   while (parent[i] != 1)
+//   {
+//     i = parent[i];
+//   }
+//   return i;
+// }
 
-int is_valid_edge_krus(int i, int j)
-{
-  int a = find(i);
-  int b = find(j);
-  parent[a] = b;
-}
+// int is_valid_edge_krus(int i, int j)
+// {
+//   int a = find(i);
+//   int b = find(j);
+//   parent[a] = b;
+// }
 
-int kruskal_mst(AdjMatrixGraph *graph)
-{
-  int min_weight = 0;
+// int kruskal_mst(AdjMatrixGraph *graph)
+// {
+//   int min_weight = 0;
 
+//   for (int i = 0; i < graph->vertex_count; i++)
+//   {
+//     parent[i] = i;
+//   }
+
+//   int edge_count = 0;
+//   while (edge_count < graph->vertex_count - 1)
+//   {
+//     int min = 999, a = -1, b = -1;
+//     for (int i = 0; i < graph->vertex_count; i++)
+//     {
+//       for (int j = 0; j < graph->vertex_count; j++)
+//       {
+//         if (find(i) != find(j) && graph->adj_matrix[i][j] < min)
+//         {
+//           min = graph->adj_matrix[i][j];
+//           a = i;
+//           b = j;
+//         }
+//       }
+//     }
+
+//     is_valid_edge_krus(a, b);
+//     printf("Edge %d:(%d, %d) Weight:%d \n", edge_count++, a, b, min);
+//     min_weight += min;
+//   }
+
+//   printf("\n Minimum weight = %d \n", min_weight);
+// }
+
+int *initialize_distances(AdjMatrixGraph *graph)
+{
+  int *arr = malloc(sizeof(int) * graph->vertex_count);
   for (int i = 0; i < graph->vertex_count; i++)
   {
-    parent[i] = i;
+    arr[i] = __INT_MAX__;
   }
 
-  int edge_count = 0;
-  while (edge_count < graph->vertex_count - 1)
+  return arr;
+}
+
+void dijkstra(AdjMatrixGraph *graph, int src, int dest)
+{
+  int *distance = initialize_distances(graph);
+  int explored[graph->vertex_count];
+
+  int current_vertex = src;
+  int current_weight = 0;
+  distance[src] = 0;
+
+  while (current_vertex != dest)
   {
-    int min = 999, a = -1, b = -1;
+    int next_vertex = __INT_MAX__;
+    explored[current_vertex] = 1;
     for (int i = 0; i < graph->vertex_count; i++)
     {
-      for (int j = 0; j < graph->vertex_count; j++)
+      if (i == current_vertex || graph->adj_matrix[current_vertex][i] == 0)
       {
-        if (find(i) != find(j) && graph->adj_matrix[i][j] < min)
-        {
-          min = graph->adj_matrix[i][j];
-          a = i;
-          b = j;
-        }
+        continue;
+      }
+
+      // Update estimates
+      if (graph->adj_matrix[current_vertex][i] > 0 && graph->adj_matrix[current_vertex][i] + current_weight < distance[i])
+      {
+        distance[i] = graph->adj_matrix[current_vertex][i] + current_weight;
+      }
+
+      // Pick the next unexplored vertex with the least distance from source adjacent to the current vertex
+      if (next_vertex == __INT_MAX__ || distance[i] < distance[next_vertex] && explored[i] != 1)
+      {
+        next_vertex = i;
       }
     }
 
-    is_valid_edge_krus(a, b);
-    printf("Edge %d:(%d, %d) Weight:%d \n", edge_count++, a, b, min);
-    min_weight += min;
+    if (distance[next_vertex] < graph->adj_matrix[current_vertex][next_vertex] + current_weight)
+    {
+      current_weight = distance[next_vertex];
+    }
+    else
+    {
+      current_weight += graph->adj_matrix[current_vertex][next_vertex];
+    }
+
+    current_vertex = next_vertex;
   }
 
-  printf("\n Minimum weight = %d \n", min_weight);
+  for (int i = 0; i < graph->vertex_count; i++)
+  {
+    printf("distance from source (%d) to : %d\n", src, distance[i]);
+  }
+}
+
+void bellman_ford(AdjMatrixGraph *graph, int src, int dest)
+{
+  // Initialization
+  int *distance = initialize_distances(graph);
+  distance[src] = 0;
+
+  // i loop: the v-1 iterations
+  // j loop: iterates through all vertices
+  // k loop: iterates through current vertex's columns to look and update distance to adjacent vertices
+
+  for (int i = 0; i < graph->vertex_count - 1; i++)
+  {
+    for (int j = 0; j < graph->vertex_count; j++)
+    {
+      if (distance[j] == __INT_MAX__)
+      {
+        continue;
+      }
+
+      for (int k = 0; k < graph->vertex_count; k++)
+      {
+        if (graph->adj_matrix[j][k] != 0 && distance[j] + graph->adj_matrix[j][k] < distance[k])
+        {
+          distance[k] = distance[j] + graph->adj_matrix[j][k];
+        }
+      }
+    }
+  }
+
+  // Print the output
+  for (int i = 0; i < graph->vertex_count; i++)
+  {
+    printf("%d: %d\n", i, distance[i]);
+  }
+}
+
+void floyd_warshall(AdjMatrixGraph *graph)
+{
+  int distance[graph->vertex_count][graph->vertex_count];
+  for (int i = 0; i < graph->vertex_count; i++)
+  {
+    for (int j = 0; j < graph->vertex_count; j++)
+    {
+      if (i == j)
+      {
+        distance[i][j] = 0;
+        continue;
+      }
+      if (graph->adj_matrix[i][j] == 0)
+      {
+        distance[i][j] = 9999;
+        continue;
+      }
+      distance[i][j] = graph->adj_matrix[i][j];
+    }
+  }
+
+  for (int i = 0; i < graph->vertex_count; i++)
+  {
+    for (int j = 0; j < graph->vertex_count; j++)
+    {
+      for (int k = 0; k < graph->vertex_count; k++)
+      {
+        if (distance[j][k] > distance[j][i] + distance[i][k])
+        {
+          distance[j][k] = distance[j][i] + distance[i][k];
+        }
+      }
+    }
+  }
+
+  for (int i = 0; i < graph->vertex_count; i++)
+  {
+    for (int j = 0; j < graph->vertex_count; j++)
+    {
+      // printf("from %d to %d: %d\n", i, j, distance[i][j]);
+      printf("%d\t", distance[i][j]);
+    }
+    printf("\n");
+  }
 }

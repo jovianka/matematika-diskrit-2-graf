@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#pragma once
 
 // Adjacency List Public Types
 // typedef struct ListVertex
@@ -35,11 +36,18 @@ typedef struct PruferCode {
   int size;
 } PruferCode;
 
+typedef struct Node {
+  struct Node* next;
+  int value;
+  
+} Node;
+
 AdjMatrixGraph *create_adjmatrix_graph(int vertex_count);
 void free_adjmatrix_graph(AdjMatrixGraph *graph);
 int add_adjmatrix_directed_edge(AdjMatrixGraph *graph, int src, int dest);
 int add_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest);
 int add_weighted_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest, int weight);
+int add_weighted_adjmatrix_directed_edge(AdjMatrixGraph *graph, int src, int dest, int weight);
 int remove_adjmatrix_undirected_edge(AdjMatrixGraph *graph, int src, int dest);
 // VertexDegree *find_adjmatrix_vertex_degree(AdjMatrixGraph *graph, int vertex); // Make sure to free the pointer after use.
 int find_adjmatrix_vertex_degree(AdjMatrixGraph *graph, int vertex);
@@ -53,5 +61,8 @@ int is_valid_edge_prim(int u, int v, int *in_mst);
 int prim_mst(AdjMatrixGraph *graph);
 int find(int i);
 int is_valid_edge_krus(int i, int j);
-int kruskal_mst(AdjMatrixGraph *graph);
-int parent[5];
+// int kruskal_mst(AdjMatrixGraph *graph); (not working yet)
+int* initialize_shortest_paths(AdjMatrixGraph* graph);
+void dijkstra(AdjMatrixGraph *graph, int src, int dest);
+void bellman_ford(AdjMatrixGraph *graph, int src, int dest);
+void floyd_warshall(AdjMatrixGraph *graph);
